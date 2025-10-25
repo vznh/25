@@ -1,0 +1,16 @@
+{
+  "name": "25",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.0",
+    "@types/bun": "latest",
+    "@types/jest": "^30.0.0",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.5"
+  },
+  "peerDependencies": {
+    "typescript": "^5.9.3"
+  }
+}
