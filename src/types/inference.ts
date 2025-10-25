@@ -1,4 +1,3 @@
-
 type Config = {
   provider: "none" | "anthropic" | "openai" | "other";
 }

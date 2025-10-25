@@ -1,4 +1,5 @@
-import { type Config, type Context } from "../types/inference";
+import { type Config, type Context } from "@/types/inference";
+import { logger } from "@/utils/logger";
 import axios from "axios";
 
 interface Structure {
@@ -9,7 +10,11 @@ class Inference implements Structure {
   constructor(cfg: Config) {}
 
   async infer(pre: Context): Promise<any> {
+    try {
 
+    } catch (e) {
+
+    }
   }
 
   // builds prompt
