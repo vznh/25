@@ -1,4 +1,28 @@
-type PPAIC = {
+interface Pre {
+  type?: string;
+  message?: string;
+
+  primary_location?: {
+    file?: string;
+    line?: number;
+    method?: string;
+  }
+
+  top?: Array<{
+    file?: string;
+    line?: number;
+    method?: string;
+  }>;
+
+  related?: Array<{
+    file?: string;
+    function?: string;
+    start?: number;
+    end?: number;
+  }>;
+}
+
+type Post = {
   "type": string,
   "message": string,
 
@@ -51,5 +75,6 @@ type PPAIC = {
 }
 
 export {
-  type PPAIC
+  type Pre,
+  type Post
 }
