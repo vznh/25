@@ -5,70 +5,128 @@ export default function AsyncErrors() {
   const [error, setError] = useState('')
 
   const unhandledPromiseRejection = async () => {
-    try {
-      const promise = Promise.reject(new Error('Unhandled promise rejection!'))
-      // Still need to let it be unhandled for the error event
-      } catch (e) {
-      console.error('Promise rejection error:', e)
+    const deepNested3 = () => {
+      const value = Math.random()
+      throw new Error('Unhandled promise rejection from deep nested function!')
     }
+    
+    const deepNested2 = () => {
+      const temp = [1, 2, 3]
+      return deepNested3()
+    }
+    
+    const deepNested1 = async () => {
+      await new Promise(resolve => setTimeout(resolve, 10))
+      return deepNested2()
+    }
+    
+    // Trigger unhandled rejection
+    deepNested1() // No await or catch - will be unhandled
   }
 
   const asyncErrorWithoutTryCatch = async () => {
-    try {
-      setLoading(true)
-      const response = await fetch('/api/nonexistent-endpoint')
-      const data = await response.json() // This will throw if response is not ok
-      setLoading(false)
-    } catch (e) {
-      console.error('Async fetch error:', e)
-      setLoading(false)
+    const validateResponse = (response: Response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+      return response
     }
+    
+    const parseData = async (response: Response) => {
+      const validated = validateResponse(response)
+      return await validated.json()
+    }
+    
+    const fetchFromAPI = async (endpoint: string) => {
+      setLoading(true)
+      const response = await fetch(endpoint)
+      return await parseData(response)
+    }
+    
+    const processRequest = async () => {
+      const data = await fetchFromAPI('/api/nonexistent-endpoint')
+      setLoading(false)
+      return data
+    }
+    
+    // No try-catch - error will bubble up
+    await processRequest()
   }
 
   const infiniteAsyncLoop = async () => {
-    try {
+    const checkCondition = (i: number) => {
+      if (i > 1000000) {
+        throw new Error('Infinite loop detected!')
+      }
+      return true
+    }
+    
+    const processIteration = (i: number) => {
+      const multiplier = 2
+      return checkCondition(i * multiplier)
+    }
+    
+    const runLoop = async () => {
       setLoading(true)
       let i = 0
       while (true) {
         i++
-        if (i > 1000000) {
-          throw new Error('Infinite loop detected!')
-        }
+        processIteration(i)
       }
-    } catch (e) {
-      console.error('Infinite async loop error:', e)
-      setLoading(false)
     }
+    
+    await runLoop()
   }
 
   const memoryLeakAsync = async () => {
-    try {
-      const largeArrays: any[] = []
+    const createLargeString = () => {
+      return 'x'.repeat(1000)
+    }
+    
+    const createLargeArray = () => {
+      return new Array(100000).fill(createLargeString())
+    }
+    
+    const allocateMemory = async (largeArrays: any[]) => {
       for (let i = 0; i < 1000; i++) {
-        const largeArray = new Array(100000).fill('x'.repeat(1000))
+        const largeArray = createLargeArray()
         largeArrays.push(largeArray)
         await new Promise(resolve => setTimeout(resolve, 10))
       }
-    } catch (e) {
-      console.error('Memory leak async error:', e)
     }
+    
+    const startMemoryLeak = async () => {
+      const largeArrays: any[] = []
+      await allocateMemory(largeArrays)
+    }
+    
+    await startMemoryLeak()
   }
 
   const raceCondition = async () => {
-    try {
-      let counter = 0
-      const increment = async () => {
-        const current = counter
-        await new Promise(resolve => setTimeout(resolve, Math.random() * 100))
-        counter = current + 1
-      }
-      
-      await Promise.all([increment(), increment(), increment()])
+    let counter = 0
+    
+    const getCurrentValue = () => {
+      return counter
+    }
+    
+    const updateCounter = (newValue: number) => {
+      counter = newValue
+    }
+    
+    const incrementAsync = async () => {
+      const current = getCurrentValue()
+      await new Promise(resolve => setTimeout(resolve, Math.random() * 100))
+      updateCounter(current + 1)
+    }
+    
+    const runRaceCondition = async () => {
+      await Promise.all([incrementAsync(), incrementAsync(), incrementAsync()])
       console.error(`Race condition - Final counter: ${counter} (should be 3)`)
       alert(`Final counter: ${counter} (should be 3)`)
-    } catch (e) {
-      console.error('Race condition error:', e)
     }
+    
+    await runRaceCondition()
   }
 
   useEffect(() => {

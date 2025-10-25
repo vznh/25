@@ -5,9 +5,21 @@ export default function FunctionalErrors() {
   const [items, setItems] = useState([1, 2, 3])
   
   const undefinedError = () => {
-    try {
+    const getCity = (address: any) => {
+      return address.city // This will throw if address is undefined
+    }
+    
+    const getAddress = (user: any) => {
+      return getCity(user.address)
+    }
+    
+    const getUserInfo = () => {
       const obj: any = { name: 'test' }
-      return obj.address.city // TypeError: Cannot read properties of undefined
+      return getAddress(obj) // obj.address is undefined
+    }
+    
+    try {
+      return getUserInfo()
     } catch (e) {
       console.error('Undefined property error:', e)
       logToServer('undefined_property', e)
@@ -15,9 +27,21 @@ export default function FunctionalErrors() {
   }
 
   const notAFunctionError = () => {
-    try {
+    const executeCallback = (callback: any) => {
+      return callback() // This will throw if callback is not a function
+    }
+    
+    const processData = (data: any) => {
+      return executeCallback(data.method)
+    }
+    
+    const initializeProcess = () => {
       const data: any = { method: 'not a function' }
-      data.method() // TypeError: data.method is not a function
+      return processData(data)
+    }
+    
+    try {
+      initializeProcess()
     } catch (e) {
       console.error('Not a function error:', e)
       logToServer('not_a_function', e)
@@ -25,9 +49,21 @@ export default function FunctionalErrors() {
   }
 
   const jsonParseError = () => {
-    try {
+    const convertToObject = (jsonString: string) => {
+      return JSON.parse(jsonString) // SyntaxError
+    }
+    
+    const validateAndParse = (data: string) => {
+      return convertToObject(data)
+    }
+    
+    const processInput = () => {
       const invalidJson = '{ name: "test", }'
-      JSON.parse(invalidJson) // SyntaxError
+      return validateAndParse(invalidJson)
+    }
+    
+    try {
+      processInput()
     } catch (e) {
       console.error('JSON parse error:', e)
       logToServer('json_parse', e)
@@ -35,9 +71,21 @@ export default function FunctionalErrors() {
   }
 
   const arrayLengthError = () => {
-    try {
-      const arr = null as any
+    const getArraySize = (arr: any) => {
       return arr.length // TypeError: Cannot read properties of null
+    }
+    
+    const countItems = (collection: any) => {
+      return getArraySize(collection)
+    }
+    
+    const processCollection = () => {
+      const arr = null as any
+      return countItems(arr)
+    }
+    
+    try {
+      return processCollection()
     } catch (e) {
       console.error('Null array length error:', e)
       logToServer('null_array_length', e)
