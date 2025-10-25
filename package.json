@@ -4,6 +4,7 @@
   "description": "Intelligent logging for agentic processes.",
   "main": "dist/index.js",
   "bin": {
+    "calhacks-axiom": "dist/cli.js",
     "logger": "dist/cli.js"
   },
   "files": [

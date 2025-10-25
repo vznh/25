@@ -27,3 +27,5 @@ program
         console.error("Invalid type. Use: 'client' or 'server'.")
     }
   });
+
+program.parse();
