@@ -15,7 +15,6 @@
     "./client": "./dist/client.js",
     "./server": "./dist/server.js"
   },
-  "type": "module",
   "scripts": {
     "build": "tsc",
     "prepare": "bun run build"
