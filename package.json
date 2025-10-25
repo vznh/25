@@ -1,6 +1,6 @@
 {
   "name": "calhacks-axiom",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Intelligent logging for agentic processes.",
   "main": "dist/index.js",
   "bin": {
