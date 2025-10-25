@@ -1,12 +1,15 @@
 {
   "name": "calhacks-axiom",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Intelligent logging for agentic processes.",
   "main": "dist/index.js",
   "bin": {
     "logger": "dist/cli.js"
   },
-  "files": ["dist", "templates"],
+  "files": [
+    "dist",
+    "templates"
+  ],
   "exports": {
     ".": "./dist/index.js",
     "./client": "./dist/client.js",
@@ -17,8 +20,16 @@
     "build": "tsc",
     "prepare": "bun run build"
   },
-  "keywords": ["logging", "error", "ai", "agents"],
-  "contributors": ["Jason Son — @vznh", "Alex Truong — @alexhtruong"],
+  "keywords": [
+    "logging",
+    "error",
+    "ai",
+    "agents"
+  ],
+  "contributors": [
+    "Jason Son — @vznh",
+    "Alex Truong — @alexhtruong"
+  ],
   "devDependencies": {
     "@biomejs/biome": "^2.3.0",
     "@types/bun": "latest",
