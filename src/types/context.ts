@@ -1,6 +1,7 @@
 interface Pre {
   type?: string;
   message?: string;
+  heuristic?: string;
 
   primary_location?: {
     file?: string;
@@ -25,6 +26,7 @@ interface Pre {
 type Post = {
   "type": string,
   "message": string,
+  "heuristic": string,
 
   "primary_location": {
     "file": string,
