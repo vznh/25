@@ -1,5 +1,5 @@
-//
 import { type Config, type Context } from "../types/inference";
+import axios from "axios";
 
 interface Structure {
   infer(pre: Context): Promise<any>;
