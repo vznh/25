@@ -26,7 +26,7 @@ export default function AsyncErrors() {
       deepNested1()
     } catch (e) {
       logger.capture(e);
-    } // No await or catch - will be unhandled
+    }
   }
 
   const asyncErrorWithoutTryCatch = async () => {

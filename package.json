@@ -1,10 +1,10 @@
 {
-  "name": "calhacks-axiom",
+  "name": "axiomarc",
   "version": "0.0.4",
-  "description": "Intelligent logging for agentic processes.",
+  "description": "Intelligent [client, server]-side logging for agentic processes.",
   "main": "dist/index.js",
   "bin": {
-    "calhacks-axiom": "dist/cli.js",
+    "axiomarc": "dist/cli.js",
     "logger": "dist/cli.js"
   },
   "files": [
