@@ -9,13 +9,13 @@ async function init_client() {
   });
 
   // Templates are at src/templates in the package
-  await copyFile(join(__dirname, "../../../axiomarc/src/templates/client/logger.ts"), "src/lib/logger.ts");
+  await copyFile(join(__dirname, "../../src/templates/client/logger.ts"), "src/lib/logger.ts");
 
   // pages router
   if (router) {
-    await copyFile(join(__dirname, "../../../axiomarc/src/templates/client/api.ts"), "src/pages/api/logger.ts");
+    await copyFile(join(__dirname, "../../src/templates/client/api.ts"), "src/pages/api/logger.ts");
   } else {
-    await copyFile(join(__dirname, "../../../axiomarc/src/templates/client/api.ts"), "src/app/api/logger.ts");
+    await copyFile(join(__dirname, "../../src/templates/client/api.ts"), "src/app/api/logger.ts");
   }
 
   // add to package.json
