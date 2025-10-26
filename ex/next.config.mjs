@@ -8,7 +8,6 @@ const __dirname = path.dirname(__filename);
 const nextConfig = {
   reactStrictMode: true,
   webpack: (config, { isServer }) => {
-    // Add rule to process TypeScript files from parent ../src directory
     config.module.rules.push({
       test: /\.tsx?$/,
       include: [path.resolve(__dirname, '../src')],

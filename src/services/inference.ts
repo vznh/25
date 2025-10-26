@@ -1,6 +1,6 @@
-import type { Config, Response } from "@/types/inference";
-import { Pre, Post, Preparsed, Postparsed } from "@/types/context";
-import { logger } from "@/utils/logger";
+import type { Config, Response } from "../types/inference";
+import { Pre, Post, Preparsed, Postparsed } from "../types/context";
+import { logger } from "../utils/logger";
 import axios, { isAxiosError } from "axios";
 
 interface Structure {

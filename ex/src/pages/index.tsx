@@ -4,7 +4,6 @@ import StateMutationError from '../components/StateMutationError'
 import FunctionalErrors from '../components/FunctionalErrors'
 import AsyncErrors from '../components/AsyncErrors'
 import MemoryLeakComponent from '../components/MemoryLeakComponent'
-import { browser } from '../../../src/browser'
 
 export default function Home() {
   const [mounted, setMounted] = useState(false)
@@ -12,16 +11,6 @@ export default function Home() {
   useEffect(() => {
     setMounted(true)
     
-    browser.init((context) => {
-      console.log('Error captured with full context:', context)
-      
-      // Example: Send to backend
-      // fetch('/api/log-error', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(context)
-      // }).catch(() => {})
-    })
   }, [])
 
   if (!mounted) {
