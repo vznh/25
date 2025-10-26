@@ -4,7 +4,7 @@ export const Preparsed = z
   .object({
     type: z.string().optional(),
     message: z.string().optional(),
-    heuristic: z.string().optional(),
+    original: z.string().optional(),
 
     primary_location: z
       .object({

@@ -5,7 +5,7 @@ import axios, { isAxiosError } from "axios";
 
 interface Structure {
   infer(pre: Pre): Promise<Post | Object | Response>;
-  parse(raw: string, parsed: string): Promise<Pre | Response>;
+  parse(parsed: Pre): Promise<Pre | Response>;
 }
 
 class Inference implements Structure {
@@ -16,13 +16,13 @@ class Inference implements Structure {
   }
 
   // first pass (building pre)
-  async parse(raw: string, parsed: string): Promise<Pre | Response> {
+  async parse(parsed: Pre): Promise<Pre | Response> {
     try {
       const response = await axios.post(
         "https://api.anthropic.com/v1/messages",
         {
           model: "claude-sonnet-4-5",
-          messages: this._prompt(raw, parsed),
+          messages: this._prompt(parsed),
           max_tokens: 10996,
         },
         {
@@ -156,8 +156,7 @@ class Inference implements Structure {
 
   // builds prompt for parse
   private _prompt(
-    raw: string,
-    parsed: string,
+    parsed: Pre,
   ): { role: string; content: string }[] {
     return [
       {
@@ -214,10 +213,7 @@ class Inference implements Structure {
       },
       {
         role: "user",
-        content: `The raw trace stack:
-        ${raw}
-
-        The parsed interface we currently have (and for you to fill in):
+        content: `The parsed interface we currently have (and for you to fill in):
         ${parsed}`,
       },
     ];

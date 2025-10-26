@@ -14,7 +14,11 @@
   "exports": {
     ".": "./dist/index.js",
     "./client": "./dist/client.js",
-    "./server": "./dist/server.js"
+    "./server": "./dist/server.js",
+    "./inference": "./dist/services/inference.js"
+  },
+  "imports": {
+    "#inference": "./src/services/inference.ts"
   },
   "scripts": {
     "build": "tsc"

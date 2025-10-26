@@ -1,5 +1,4 @@
 import type { Pre, Post } from "@/types/context";
-import { parseStackTrace } from "@/utils/parser";
 
 class Logger {
   private api: string;
@@ -13,40 +12,31 @@ class Logger {
   }
 
   async capture(error: unknown): Promise<void> {
-    // alpha response
-    const prepre = await this._build(error);
+    const pre = this._build(error) as Pre;
 
-    // beta response (actual pre)
-    const presponse = await fetch(
-      `${this.api}/api/logger`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(prepre)
-      }
-    );
+    // go all in one
+    await fetch(`${this.api}/api/logger`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(pre),
+    });
 
-    // then post response
-
-    // api to print to server console
-
-    // return nothing
     return;
   }
 
-  private async _build(error: unknown): Promise<Pre> {
-    const original = error instanceof Error
-      ? error
-      : new Error(String(error));
+  // 1st pass
+  private _build(error: unknown): Pre {
+    const original = error instanceof Error ? error : new Error(String(error));
     const frames = this._st(original);
 
     if (frames.length === 0) {
       return {
         type: original.name,
         message: original.message,
-        primary_location: { method: 'unknown', file: 'unknown', line: 0 },
+        original: String(original),
+        primary_location: { method: "unknown", file: "unknown", line: 0 },
         top: [],
         related: [],
       } as Pre;
@@ -55,17 +45,18 @@ class Logger {
     return {
       type: original.name,
       message: original.message,
+      original: String(original),
       primary_location: {
         method: frames[0]?.method ?? "unknown",
         file: frames[0]?.file ?? "unknown",
-        line: frames[0]?.line ?? 0
+        line: frames[0]?.line ?? 0,
       },
-      top: frames.slice(0, 5).map(f => ({
+      top: frames.slice(0, 5).map((f) => ({
         method: f.method || undefined,
         file: f.file || undefined,
-        line: f.line || undefined
+        line: f.line || undefined,
       })),
-      related: []
+      related: [],
     } as Pre;
   }
 
@@ -78,7 +69,7 @@ class Logger {
     if (!error.stack) return [];
 
     const frames = [];
-    const lines = error.stack.split('\n');
+    const lines = error.stack.split("\n");
 
     for (const line of lines) {
       // Chrome/Edge: "at functionName (file:line:column)"
@@ -92,55 +83,54 @@ class Logger {
           method: chrome[1]?.trim() || null,
           file: chrome[2],
           line: parseInt(chrome[3]),
-          column: parseInt(chrome[4])
+          column: parseInt(chrome[4]),
         });
       } else if (firefox && firefox[2] && firefox[3] && firefox[4]) {
         frames.push({
           method: firefox[1]?.trim() || null,
           file: firefox[2],
           line: parseInt(firefox[3]),
-          column: parseInt(firefox[4])
+          column: parseInt(firefox[4]),
         });
       }
     }
 
     const ignorePatterns = [
-      '/node_modules/',
-      '_next/static/chunks/',
-      'next/dist/',
-      'webpack.js',
-      '__webpack_require__',
-      'webpackJsonpCallback',
-      'vite/',
-      '@vite/',
-      'parcel/',
-      '@parcel/',
-      'rollup/',
-      '@rollup/',
-      'react-dom/',
-      'react/cjs/',
-      'angular/',
-      '@angular/',
-      'svelte/',
-      '@svelte/',
-      'vue/',
-      '@vue/',
-      'core-js/',
-      'babel/',
-      '@babel/',
-      'zone.js',
-      'systemjs/',
-      'esm/',
-      '@esm/',
-      'regenerator-runtime/'
+      "/node_modules/",
+      "_next/static/chunks/",
+      "next/dist/",
+      "webpack.js",
+      "__webpack_require__",
+      "webpackJsonpCallback",
+      "vite/",
+      "@vite/",
+      "parcel/",
+      "@parcel/",
+      "rollup/",
+      "@rollup/",
+      "react-dom/",
+      "react/cjs/",
+      "angular/",
+      "@angular/",
+      "svelte/",
+      "@svelte/",
+      "vue/",
+      "@vue/",
+      "core-js/",
+      "babel/",
+      "@babel/",
+      "zone.js",
+      "systemjs/",
+      "esm/",
+      "@esm/",
+      "regenerator-runtime/",
     ];
 
-    return frames.filter(frame => {
+    return frames.filter((frame) => {
       if (!frame.file) return false;
-      return !ignorePatterns.some(pattern => frame.file.includes(pattern));
+      return !ignorePatterns.some((pattern) => frame.file.includes(pattern));
     });
   }
-
 }
 
 export const logger = new Logger(process.env.NEXT_PUBLIC_LOGGER_API_URL);
