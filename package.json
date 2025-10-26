@@ -1,6 +1,6 @@
 {
   "name": "axiomarc",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Intelligent [client, server]-side logging for agentic processes.",
   "main": "dist/index.js",
   "bin": {
