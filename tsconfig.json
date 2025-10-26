@@ -27,7 +27,9 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
-      "#inference": ["src/services/inference.ts"]
+      "#inference": ["src/services/inference.ts"],
+      "axiomarc/types": ["src/types/context.ts"],
+      "axiomarc/inference": ["src/services/inference.ts"]
     }
   },
   "include": ["src/**/*"],

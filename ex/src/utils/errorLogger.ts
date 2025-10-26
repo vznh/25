@@ -130,7 +130,7 @@ export const browser = {
 };
 
 // Utility function to log errors to server
-const logToServer = (type: string, error: any) => {
+export const logToServer = (type: string, error: any) => {
   fetch('/api/log-error', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

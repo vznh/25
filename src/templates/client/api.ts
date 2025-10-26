@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { Inference } from "#inference";
-import type { Pre, Post } from "@/types/context";
+import { Inference } from "axiomarc/inference";
+import type { Pre, Post } from "axiomarc/types";
 
 export default async function handler(
   req: NextApiRequest,

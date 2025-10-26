@@ -1,4 +1,4 @@
-import type { Pre, Post } from "@/types/context";
+import type { Pre, Post } from "axiomarc/types";
 
 class Logger {
   async capture(error: unknown): Promise<void> {

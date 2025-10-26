@@ -1,31 +1,31 @@
 import { useState, useEffect } from 'react'
-import { logger } from "../../../src/templates/client/logger";
-
+import {  } from "axiomarc"
 export default function AsyncErrors() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+
   const unhandledPromiseRejection = async () => {
     const deepNested3 = () => {
       const value = Math.random()
-      // throw new Error('Unhandled promise rejection from deep nested function!')
+      throw new Error('Unhandled promise rejection from deep nested function!')
     }
 
     const deepNested2 = () => {
       const temp = [1, 2, 3]
-      // return deepNested3()
+      return deepNested3()
     }
 
     const deepNested1 = async () => {
       await new Promise(resolve => setTimeout(resolve, 10))
-      // return deepNested2()
+      return deepNested2()
     }
 
     // Trigger unhandled rejection
     try {
-      deepNested1()
+      await deepNested1()
     } catch (e) {
-      logger.capture(e);
+      await axiomarc.capture(e);
     }
   }
 

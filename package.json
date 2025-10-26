@@ -23,7 +23,7 @@
     "#inference": "./src/services/inference.ts"
   },
   "scripts": {
-    "build": "tsc && npm run fix-imports",
+    "build": "tsc",
     "fix-imports": "replace-in-file \"#inference\" \"axiomarc/inference\" \"dist/**/*.js\" --isRegex && replace-in-file \"@/types/context\" \"axiomarc/types\" \"dist/**/*.js\" --isRegex",
     "prepublishOnly": "npm run build"
   },
@@ -53,6 +53,7 @@
     "axios": "^1.12.2",
     "chalk": "4",
     "commander": "^14.0.2",
+    "next": "^16.0.0",
     "replace-in-file": "^8.3.0",
     "zod": "^4.1.12"
   }
