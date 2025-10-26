@@ -17,8 +17,7 @@ class Logger {
   async capture(error: unknown): Promise<void> {
     const pre = await this._build(error);
     const post = await this.inference.infer(pre);
-    console.log(post);
-    // print post to server console
+    this.inference.print(post as Post);
     // return void
   }
 

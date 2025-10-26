@@ -1,5 +1,6 @@
 import type { Config, Response } from "../types/inference";
 import { Pre, Post, Preparsed, Postparsed } from "../types/context";
+import chalk = require("chalk");
 import { logger } from "../utils/logger";
 import axios, { isAxiosError } from "axios";
 
@@ -78,6 +79,15 @@ class Inference implements Structure {
       logger.fatal(`* Ran into a major error. Not your fault.`);
       return { success: false, error: "* Unknown error occurred." };
     }
+  }
+
+  // pretty-prints
+  print(post: Post): void {
+    const error = chalk.red("* ") + chalk.red.bold("Error was ") + chalk.white(post.heuristic || "an unknown error");
+    console.log(error);
+    const hidden = 'x1b[8m' + JSON.stringify(post, null, 2) + '\x1b[0m';
+    const visible = chalk.gray(`+${JSON.stringify(post).split("\n").length} lines (${chalk.underline("ctrl+r")} to expand`);
+    console.log(`${hidden}\n${visible}`)
   }
 
   // builds prompt for infer

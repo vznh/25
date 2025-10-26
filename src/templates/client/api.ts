@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { Inference } from "#inference";
-import type { Pre } from "@/types/context";
+import type { Pre, Post } from "@/types/context";
 
 export default async function handler(
   req: NextApiRequest,
@@ -18,7 +18,7 @@ export default async function handler(
     const post = await inference.infer(pre as Pre);
 
     // pretty print here
-    console.log(post);
+    inference.print(post as Post);
 
     res.status(200).json({ success: true });
   } catch (e) {

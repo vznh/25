@@ -122,4 +122,4 @@ class Logger {
   }
 }
 
-export const logger = new Logger(process.env.NEXT_PUBLIC_LOGGER_API_URL);
+export const logger = new Logger();

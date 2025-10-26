@@ -139,4 +139,4 @@ const parsed = `
     }
   }`;
 
-export { raw, parsed };
+export { parsed };
