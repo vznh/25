@@ -43,8 +43,7 @@ class Inference implements Structure {
         logger.info(e?.response?.status);
         logger.error("* Is an AxiosError, check API key.");
       }
-      logger.fatal(`* Ran into a major error. Not your fault.`);
-      return { success: false, error: "* Unknown error occurred." };
+      return { success: false, error: "* Ran into a major error." };
     }
   }
 
@@ -76,8 +75,7 @@ class Inference implements Structure {
         logger.info(e.response?.data)
         logger.error("* Is an AxiosError, check API key.");
       }
-      logger.fatal(`* Ran into a major error. Not your fault.`);
-      return { success: false, error: "* Unknown error occurred." };
+      return { success: false, error: "* Ran into a major error." };
     }
   }
 
@@ -90,12 +88,11 @@ class Inference implements Structure {
 
     const error = chalk.red("* ") + chalk.red.bold("Error was ") + chalk.white(cleaned || "an unknown error");
     const data = JSON.stringify(post);
-    const line = data.split('\n').length;
+    const arc = chalk.white("✤ Arc output:") + chalk.gray(data);
 
 
-    console.log(`${chalk.red('* Error was')} ${error}.`);
-    console.log(`+ ${line} lines`);
-    console.log(`✤ Arc output: ${data}`);
+    console.log(`${error}.`);
+    process.stdout.write(arc);
   }
 
   // builds prompt for infer
