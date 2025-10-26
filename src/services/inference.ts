@@ -83,11 +83,19 @@ class Inference implements Structure {
 
   // pretty-prints
   print(post: Post): void {
-    const error = chalk.red("* ") + chalk.red.bold("Error was ") + chalk.white(post.heuristic || "an unknown error");
-    console.log(error);
-    const hidden = 'x1b[8m' + JSON.stringify(post, null, 2) + '\x1b[0m';
-    const visible = chalk.gray(`+${JSON.stringify(post).split("\n").length} lines (${chalk.underline("ctrl+r")} to expand`);
-    console.log(`${hidden}\n${visible}`)
+    let cleaned = "";
+    if (post.heuristic.startsWith("Error: ")) {
+      cleaned = post.heuristic.substring(6);
+    }
+
+    const error = chalk.red("* ") + chalk.red.bold("Error was ") + chalk.white(cleaned || "an unknown error");
+    const data = JSON.stringify(post);
+    const line = data.split('\n').length;
+
+
+    console.log(`${chalk.red('* Error was')} ${error}.`);
+    console.log(`+ ${line} lines`);
+    console.log(`✤ Arc output: ${data}`);
   }
 
   // builds prompt for infer

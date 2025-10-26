@@ -14,7 +14,7 @@ export default async function handler(
     if (!key) return res.status(500);
 
     const inference = new Inference({ key });
-    const pre = await inference.parse(body as Pre);
+    // const pre = await inference.parse(body as Pre);
     const post = await inference.infer(pre as Pre);
 
     // pretty print here
