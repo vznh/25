@@ -1,4 +1,3 @@
-const raw = `Error: Failed to process order: Item price mnust be a number`;
 const parsed = `
   {
     "error": {
@@ -6,6 +5,7 @@ const parsed = `
       "message": "Async order processing failed: Database connection failed",
       "stack": "Error: Async order processing failed: Database connection failed\n    at processAsyncOrder (/home/alex/25/tests/test-runtime-error.ts:71:15)"
     },
+    "original": " Error: Failed to process order: Item price mnust be a number",
     "callChain": [
       {
         "method": "processAsyncOrder",

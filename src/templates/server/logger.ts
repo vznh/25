@@ -24,7 +24,7 @@ class Logger {
 
   private async _build(error: unknown): Promise<Pre> {
     const original = error instanceof Error
-      ? error 
+      ? error
       : new Error(String(error));
     const frames = this._st(original);
 

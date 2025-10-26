@@ -1,21 +1,11 @@
 import type { Pre, Post } from "@/types/context";
 
 class Logger {
-  private api: string;
-
-  constructor(api: string = process.env.LOGGER_API_URL!) {
-    if (!api) {
-      // throw an error here
-    }
-
-    this.api = api;
-  }
-
   async capture(error: unknown): Promise<void> {
     const pre = this._build(error) as Pre;
 
     // go all in one
-    await fetch(`${this.api}/api/logger`, {
+    await fetch(`/api/logger`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -30,8 +20,7 @@ class Logger {
   private _build(error: unknown): Pre {
     const original = error instanceof Error ? error : new Error(String(error));
     const frames = this._st(original);
-
-    if (frames.length === 0) {
+   if (frames.length === 0) {
       return {
         type: original.name,
         message: original.message,
