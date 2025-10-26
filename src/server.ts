@@ -1,42 +1,40 @@
-import type { PreAIContext } from './types';
-import { buildPreAIContext } from './utils/parser';
+import { Reader } from './utils/reader';
 
 /**
- * Server error logger (Node.js/Bun)
- * Captures unhandled exceptions and promise rejections
+ * Server error logger focused on try-catch integration
+ * Provides enhanced error analysis for manual error handling
  */
 export const server = {
+  // Shared reader instance for error analysis
+  reader: new Reader(),
+
   /**
-   * Initialize server error capture.
-   * Captures unhandled exceptions and promise rejections.
+   * Initialize the server library
+   * Note: This library focuses on try-catch integration, not global error handlers
    */
-  init(onError?: (context: PreAIContext) => void) {
-    // Capture unhandled exceptions
-    process.on('uncaughtException', async (error) => {
-      const context = await buildPreAIContext(error);
-      console.error('[Uncaught Exception]', context);
-      onError?.(context);
-    });
-
-    // Capture unhandled promise rejections
-    process.on('unhandledRejection', async (reason) => {
-      const context = await buildPreAIContext(reason);
-      console.error('[Unhandled Rejection]', context);
-      onError?.(context);
-    });
-
-    console.log('[Error Logger] Server error capture initialized');
+  init() {
+    console.log('[Error Logger] Server ready for try-catch error analysis');
   },
 
   /**
-   * Manually capture an error with full context
+   * Analyze an error with complete call chain and source code
+   * Main method for try-catch integration
    */
-  async captureError(error: unknown): Promise<PreAIContext> {
-    return await buildPreAIContext(error);
+  async analyzeError(error: unknown): Promise<any> {
+    const err = error instanceof Error ? error : new Error(String(error));
+    return await this.reader.analyzeRuntimeError(err);
   },
 
   /**
-   * Wrap a function to automatically capture any errors it throws
+   * Legacy method - same as analyzeError for compatibility
+   */
+  async captureError(error: unknown): Promise<any> {
+    return await this.analyzeError(error);
+  },
+
+  /**
+   * Wrap a function to automatically analyze errors it throws
+   * Still requires try-catch to handle the wrapped errors
    */
   wrap<T extends (...args: any[]) => any>(fn: T): T {
     return ((...args: any[]) => {
@@ -45,15 +43,23 @@ export const server = {
         // Handle async functions
         if (result instanceof Promise) {
           return result.catch(async (error) => {
-            const context = await buildPreAIContext(error);
-            console.error('[Wrapped Function Error]', context);
+            const context = await this.reader.analyzeRuntimeError(error as Error);
+            console.log('[Wrapped Function Error Analysis Available]', {
+              error: context.error.message,
+              callChainLength: context.callChain.length,
+              functionsInvolved: context.callChain.map(f => f.method).filter(Boolean)
+            });
             throw error;
           });
         }
         return result;
       } catch (error) {
-        buildPreAIContext(error).then(context => {
-          console.error('[Wrapped Function Error]', context);
+        this.reader.analyzeRuntimeError(error as Error).then(context => {
+          console.log('[Wrapped Function Error Analysis Available]', {
+            error: context.error.message,
+            callChainLength: context.callChain.length,
+            functionsInvolved: context.callChain.map(f => f.method).filter(Boolean)
+          });
         });
         throw error;
       }
