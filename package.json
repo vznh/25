@@ -17,8 +17,7 @@
     "./server": "./dist/server.js"
   },
   "scripts": {
-    "build": "tsc",
-    "prepare": "bun run build"
+    "build": "tsc"
   },
   "keywords": [
     "logging",
