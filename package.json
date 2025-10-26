@@ -1,6 +1,6 @@
 {
   "name": "axiomarc",
-  "version": "0.0.4",
+  "version": "0.0.1",
   "description": "Intelligent [client, server]-side logging for agentic processes.",
   "main": "dist/index.js",
   "bin": {
@@ -9,19 +9,23 @@
   },
   "files": [
     "dist",
-    "templates"
+    "src/templates"
   ],
   "exports": {
     ".": "./dist/index.js",
-    "./client": "./dist/client.js",
-    "./server": "./dist/server.js",
-    "./inference": "./dist/services/inference.js"
+    "./client": "./src/templates/client/logger.ts",
+    "./server": "./src/templates/server/logger.ts",
+    "./client-api": "./src/templates/client/api.ts",
+    "./inference": "./dist/services/inference.js",
+    "./types": "./dist/types/context.js"
   },
   "imports": {
     "#inference": "./src/services/inference.ts"
   },
   "scripts": {
-    "build": "tsc"
+    "build": "tsc && npm run fix-imports",
+    "fix-imports": "replace-in-file \"#inference\" \"axiomarc/inference\" \"dist/**/*.js\" --isRegex && replace-in-file \"@/types/context\" \"axiomarc/types\" \"dist/**/*.js\" --isRegex",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "logging",
@@ -49,6 +53,7 @@
     "axios": "^1.12.2",
     "chalk": "4",
     "commander": "^14.0.2",
+    "replace-in-file": "^8.3.0",
     "zod": "^4.1.12"
   }
 }

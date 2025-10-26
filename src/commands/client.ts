@@ -1,5 +1,6 @@
 import { copyFile } from "fs/promises";
 import { confirm } from "@clack/prompts";
+import { join } from "path";
 
 async function init_client() {
   const router = await confirm({
@@ -7,14 +8,14 @@ async function init_client() {
     initialValue: false
   });
 
-  await copyFile("templates/client/logger.ts", "src/lib/logger.ts");
-  await copyFile("templates/types/client.ts", "src/types/logger.ts");
+  // Templates are at src/templates in the package
+  await copyFile(join(__dirname, "../../../src/templates/client/logger.ts"), "src/lib/logger.ts");
 
   // pages router
   if (router) {
-    await copyFile("templates/client/api.ts", "src/pages/api/logger.ts");
+    await copyFile(join(__dirname, "../../../src/templates/client/api.ts"), "src/pages/api/logger.ts");
   } else {
-    await copyFile("templates/client/api.ts", "src/app/api/logger.ts");
+    await copyFile(join(__dirname, "../../../src/templates/client/api.ts"), "src/app/api/logger.ts");
   }
 
   // add to package.json

@@ -15,7 +15,7 @@ export default async function handler(
 
     const inference = new Inference({ key });
     // const pre = await inference.parse(body as Pre);
-    const post = await inference.infer(pre as Pre);
+    const post = await inference.infer(body as Pre);
 
     // pretty print here
     inference.print(post as Post);

@@ -1,8 +1,9 @@
 import { copyFile } from "fs/promises";
+import { join } from "path";
 
 async function init_server() {
-  await copyFile("templates/server/logger.ts", "src/logger.ts");
-  await copyFile("templates/types/server.ts", "src/types/logger.ts");
+  await copyFile(join(__dirname, "../../../src/templates/server/logger.ts"), "src/logger.ts");
+
   // add to package.json
   // create env config
 
