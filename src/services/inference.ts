@@ -1,10 +1,11 @@
-import { type Config, type Context } from "@/types/inference";
+import type { Config, Response } from "@/types/inference";
+import { Pre, Post, Preparsed, Postparsed } from "@/types/context";
 import { logger } from "@/utils/logger";
-import axios from "axios";
+import axios, { isAxiosError } from "axios";
 
 interface Structure {
-  infer(pre: Context): Promise<any>;
-  parse(raw: string, parsed: string): Promise<any>;
+  infer(pre: Pre): Promise<Post | Object | Response>;
+  parse(raw: string, parsed: string): Promise<Pre | Response>;
 }
 
 class Inference implements Structure {
@@ -14,43 +15,80 @@ class Inference implements Structure {
     this.key = cfg.key;
   }
 
-  async parse(raw: string, parsed: string): Promise<any> {
+  async parse(raw: string, parsed: string): Promise<Pre | Response> {
     try {
-      const response = await axios.post(this.selector(this.key), {
-        model: "glm-4.5-air",
-        messages: [this._prompt(raw, parsed)],
-      });
+      const response = await axios.post(
+        "https://api.anthropic.com/v1/messages",
+        {
+          model: "claude-sonnet-4-5",
+          messages: this._prompt(raw, parsed),
+          max_tokens: 10996,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "ANTHROPIC-VERSION": "2023-06-01",
+            "X-API-KEY": `${this.key}`,
+          },
+        },
+      );
 
-      this.terraform(this.extract(response));
+      const result = this.terraform(this.extract(response));
+
+      return result;
     } catch (e) {
-      logger.error(`!!!
-        * Error while parsing.
-        *
-        * ${e}
-      !!!`);
+      if (isAxiosError(e)) {
+        logger.info(e?.response?.status);
+        logger.error("* Is an AxiosError, check API key.");
+      }
+      logger.fatal(`* Ran into a major error. Not your fault.`);
+      return { success: false, error: "* Unknown error occurred." };
     }
   }
 
-  async infer(pre: Context): Promise<any> {
+  async infer(pre: Pre): Promise<Post | Object | Response> {
     try {
-      const response = await axios.post(this.selector(this.key), {
-        model: "glm-4.6",
-        messages: [this.prompt(pre)],
-      });
+      const response = await axios.post(
+        "https://api.anthropic.com/v1/messages",
+        {
+          model: "claude-sonnet-4-5",
+          messages: [
+            {
+              role: "assistant",
+              content: this.prompt(pre),
+            },
+          ],
+          max_tokens: 10996,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "ANTHROPIC-VERSION": "2023-06-01",
+            "X-API-KEY": `${this.key}`,
+          },
+        },
+      );
 
-      return this.terraform(this.extract(response));
+      const result = this.terraform(this.extract(response));
+      if (!this.validate("post", result)) {
+        logger.error(
+          "* We were unable to parse the stack trace. All calls were successful, so retrying..",
+        );
+      }
+
+      return result;
     } catch (e) {
-      logger.error(`!!!
-        * Error while inferring.
-        *
-        * ${e}
-      !!!`);
+      if (isAxiosError(e)) logger.error("* Is an AxiosError, check API key.");
+      logger.fatal(`* Ran into a major error. Not your fault.`);
+      return { success: false, error: "* Unknown error occurred." };
     }
   }
 
   // builds prompt for infer
-  private prompt(pre: Context) {
-    return `You are an expert debugging assistant. Analyze the error context and provide a structured debugging report.
+  private prompt(pre: Pre): { role: string; content: string } {
+    return {
+      role: "system",
+      content: `You are an expert debugging assistant. Analyze the error context and provide a structured debugging report.
     Context provided:
     ${JSON.stringify(pre, null, 2)}
 
@@ -112,17 +150,19 @@ class Inference implements Structure {
     This tool allows you to modify the content of a file. It is essential for making code changes, updating configurations, or fixing bugs directly within the IDE.
     delete_file
     A tool to delete files. Use this to remove unnecessary or obsolete files from your project, helping keep your workspace organized.
-    `;
+    `,
+    };
   }
 
   // builds prompt for parse
   private _prompt(
     raw: string,
     parsed: string,
-  ): { role: string; content: string } {
-    return {
-      role: "system",
-      content: `You are a code analysis assistant. Your task is to enrich a partially parsed error context with missing details that will help another instance understand the error better.
+  ): { role: string; content: string }[] {
+    return [
+      {
+        role: "assistant",
+        content: `You are a code analysis assistant. Your task is to enrich a partially parsed error context with missing details that will help another instance understand the error better.
 
       You will receive:
       1. A raw stack trace string,
@@ -132,12 +172,6 @@ class Inference implements Structure {
       1. Identify what information is missing or incomplete,
       2. Infer function signatures, parameter types, and variable values wherever possible,
       3. Identify files or functions that might be relevant but weren't fully captured
-
-      The raw trace stack:
-      ${raw}
-
-      The parsed interface we currently have (and for you to fill in):
-      ${parsed}
 
       Return a JSON object in interface:
       {
@@ -177,19 +211,16 @@ class Inference implements Structure {
         "related": [...]
       }
       `,
-    };
-  }
+      },
+      {
+        role: "user",
+        content: `The raw trace stack:
+        ${raw}
 
-  // differentiates between openai, anthro, ...
-  private selector(key: string): string {
-    const k = (key ?? "").trim();
-    if (!k) return "unknown";
-
-    if (k.startsWith("sk-ant-")) return "https://api.anthropic.com/v1/messages";
-    if (k.startsWith("sk-"))
-      return "https://api.openai.com/v1/chat/completions";
-
-    return "https://api.z.ai/api/paas/v4/chat/completions";
+        The parsed interface we currently have (and for you to fill in):
+        ${parsed}`,
+      },
+    ];
   }
 
   private extract(response: any): string {
@@ -202,11 +233,31 @@ class Inference implements Structure {
 
   // transforms raw string to proper JSON
   private terraform(raw: string): Object {
-    return JSON.parse(raw);
+    let cleaned = raw;
+    if (cleaned.startsWith("```json")) {
+      cleaned = cleaned.substring(7);
+    } else if (cleaned.startsWith("```")) {
+      cleaned = cleaned.substring(3);
+    }
+
+    if (cleaned.endsWith("```")) {
+      cleaned = cleaned.substring(0, cleaned.length - 3);
+    }
+
+    return JSON.parse(cleaned);
   }
 
   // checks if VALID in any form (all forms valid, etc..)
-  private validate() {}
+  private validate(mode: "pre" | "post", input: Object): boolean {
+    switch (mode) {
+      case "pre":
+        return Preparsed.safeParse(input).success;
+      case "post":
+        return Postparsed.safeParse(input).success;
+      default:
+        return false;
+    }
+  }
 }
 
 export { Inference };

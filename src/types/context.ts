@@ -1,82 +1,101 @@
-interface Pre {
-  type?: string;
-  message?: string;
-  heuristic?: string;
+import { z } from "zod";
 
-  primary_location?: {
-    file?: string;
-    line?: number;
-    method?: string;
-  }
+export const Preparsed = z
+  .object({
+    type: z.string().optional(),
+    message: z.string().optional(),
+    heuristic: z.string().optional(),
 
-  top?: Array<{
-    file?: string;
-    line?: number;
-    method?: string;
-  }>;
+    primary_location: z
+      .object({
+        file: z.string().optional(),
+        line: z.number().optional(),
+        method: z.string().optional(),
+      })
+      .optional(),
 
-  related?: Array<{
-    file?: string;
-    function?: string;
-    start?: number;
-    end?: number;
-  }>;
-}
+    top: z
+      .array(
+        z.object({
+          file: z.string().optional(),
+          line: z.number().optional(),
+          method: z.string().optional(),
+        })
+      )
+      .optional(),
 
-type Post = {
-  "type": string,
-  "message": string,
-  "heuristic": string,
+    related: z
+      .array(
+        z.object({
+          file: z.string().optional(),
+          function: z.string().optional(),
+          start: z.number().optional(),
+          end: z.number().optional(),
+        })
+      )
+      .optional(),
+  });
 
-  "primary_location": {
-    "file": string,
-    "line": number,
-    "method": string,
-  },
+export const Postparsed = z
+  .object({
+    type: z.string(),
+    message: z.string(),
+    heuristic: z.string(),
 
-  "top": {
-    "file": string,
-    "line": number,
-    "method": string,
-  }[],
+    primary_location: z.object({
+      file: z.string(),
+      line: z.number(),
+      method: z.string(),
+    }),
 
-  "related": {
-    "file": string,
-    "function": string,
-    "start": number,
-    "end": number
-  },
+    top: z.array(
+      z.object({
+        file: z.string(),
+        line: z.number(),
+        method: z.string(),
+      })
+    ),
 
-  "snippets": {
-    "file": string,
-    "start": number,
-    "lines": string[],
-  },
+    related: z.object({
+      file: z.string(),
+      function: z.string(),
+      start: z.number(),
+      end: z.number(),
+    }),
 
-  "evidence": {
-    "file": string,
-    "line": number,
-    "why": string
-  }[],
+    snippets: z.object({
+      file: z.string(),
+      start: z.number(),
+      lines: z.array(z.string()),
+    }),
 
-  "required": {
-    "type": string,
-    "path"?: string,
-    "lines"?: number[],
-    "query"?: string,
-    "scope"?: string,
-  }[],
+    evidence: z.array(
+      z.object({
+        file: z.string(),
+        line: z.number(),
+        why: z.string(),
+      })
+    ),
 
-  "missing": string[],
+    required: z.array(
+      z.object({
+        type: z.string(),
+        path: z.string().optional(),
+        lines: z.array(z.number()).optional(),
+        query: z.string().optional(),
+        scope: z.string().optional(),
+      })
+    ),
 
-  "_omitted": {
-    "frames": number,
-    "snippetLines": number,
-    "relatedFunctions": number
-  }
-}
+    missing: z.array(z.string()),
 
-export {
-  type Pre,
-  type Post
-}
+    _omitted: z.object({
+      frames: z.number(),
+      snippetLines: z.number(),
+      relatedFunctions: z.number(),
+    }),
+  })
+  .strict();
+
+export type Pre = z.infer<typeof Preparsed>;
+export type Post = z.infer<typeof Postparsed>;
