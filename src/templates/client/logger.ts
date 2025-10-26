@@ -10,12 +10,13 @@ class Logger {
     }
 
     this.api = api;
-    this.
   }
 
   async capture(error: unknown): Promise<void> {
-    const pre = await this._build(error);
+    // alpha response
+    const prepre = await this._build(error);
 
+    // beta response (actual pre)
     const presponse = await fetch(
       `${this.api}/api/logger`,
       {
@@ -23,7 +24,7 @@ class Logger {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(pre)
+        body: JSON.stringify(prepre)
       }
     );
 
@@ -36,48 +37,39 @@ class Logger {
   }
 
   private async _build(error: unknown): Promise<Pre> {
-    // maintain original stack trace
-    // parse copy of stack trace here
-    // filter copy of stack trace here
-    // call ai func to fill in missing details from original and parsed stack trace
-    // return as Pre
-    const err = error instanceof Error ? error : new Error(String(error));
-    const stackFrames = this._parseStackTrace(err);
-    console.log(`STACK FRAMES: ${JSON.stringify(stackFrames)}`)
-    console.log(`ERR: ${err}`)
-    if (stackFrames.length === 0) {
+    const original = error instanceof Error
+      ? error
+      : new Error(String(error));
+    const frames = this._st(original);
+
+    if (frames.length === 0) {
       return {
-        type: err.name,
-        message: err.message,
-        heuristic: `Error: ${err.message}`,
+        type: original.name,
+        message: original.message,
         primary_location: { method: 'unknown', file: 'unknown', line: 0 },
         top: [],
-        related: []
-      };
+        related: [],
+      } as Pre;
     }
 
-    const primaryFrame = stackFrames[0];
-    const preAI = {
-      type: err.name,
-      message: err.message,
-      heuristic: this._generateHeuristic(err.message, primaryFrame),
+    return {
+      type: original.name,
+      message: original.message,
       primary_location: {
-        method: primaryFrame?.method || 'unknown',
-        file: primaryFrame?.file || 'unknown',
-        line: primaryFrame?.line || 0
+        method: frames[0]?.method ?? "unknown",
+        file: frames[0]?.file ?? "unknown",
+        line: frames[0]?.line ?? 0
       },
-      top: stackFrames.slice(0, 5).map(frame => ({
-        method: frame.method || undefined,
-        file: frame.file || undefined,
-        line: frame.line || undefined
+      top: frames.slice(0, 5).map(f => ({
+        method: f.method || undefined,
+        file: f.file || undefined,
+        line: f.line || undefined
       })),
       related: []
-    };
-    console.log(preAI);
-    return preAI
+    } as Pre;
   }
 
-  private _parseStackTrace(error: Error): Array<{
+  private _st(error: Error): Array<{
     method: string | null;
     file: string | null;
     line: number | null;
@@ -89,25 +81,25 @@ class Logger {
     const lines = error.stack.split('\n');
 
     for (const line of lines) {
-      // Chrome/Edge format: "at functionName (file:line:column)"
-      // Firefox format: "functionName@file:line:column"
+      // Chrome/Edge: "at functionName (file:line:column)"
+      // Firefox: "functionName@file:line:column"
 
-      const chromeMatch = line.match(/at\s+(?:(.+?)\s+\()?(.+?):(\d+):(\d+)\)?/);
-      const firefoxMatch = line.match(/(.+?)@(.+?):(\d+):(\d+)/);
+      const chrome = line.match(/at\s+(?:(.+?)\s+\()?(.+?):(\d+):(\d+)\)?/);
+      const firefox = line.match(/(.+?)@(.+?):(\d+):(\d+)/);
 
-      if (chromeMatch && chromeMatch[2] && chromeMatch[3] && chromeMatch[4]) {
+      if (chrome && chrome[2] && chrome[3] && chrome[4]) {
         frames.push({
-          method: chromeMatch[1]?.trim() || null,
-          file: chromeMatch[2],
-          line: parseInt(chromeMatch[3]),
-          column: parseInt(chromeMatch[4])
+          method: chrome[1]?.trim() || null,
+          file: chrome[2],
+          line: parseInt(chrome[3]),
+          column: parseInt(chrome[4])
         });
-      } else if (firefoxMatch && firefoxMatch[2] && firefoxMatch[3] && firefoxMatch[4]) {
+      } else if (firefox && firefox[2] && firefox[3] && firefox[4]) {
         frames.push({
-          method: firefoxMatch[1]?.trim() || null,
-          file: firefoxMatch[2],
-          line: parseInt(firefoxMatch[3]),
-          column: parseInt(firefoxMatch[4])
+          method: firefox[1]?.trim() || null,
+          file: firefox[2],
+          line: parseInt(firefox[3]),
+          column: parseInt(firefox[4])
         });
       }
     }
@@ -149,22 +141,6 @@ class Logger {
     });
   }
 
-  private _generateHeuristic(message: string, frame: any): string {
-    const method = frame.method || 'unknown function';
-    const file = frame.file ? frame.file.split('/').pop() : 'unknown file';
-
-    if (message.includes('Cannot read property')) {
-      return `Null/undefined error in ${method}`;
-    }
-    if (message.includes('Network')) {
-      return `Network error in ${method}`;
-    }
-    if (message.includes('timeout')) {
-      return `Timeout error in ${method}`;
-    }
-
-    return `${message.split(':')[0]} in ${method} (${file})`;
-  }
 }
 
 export const logger = new Logger(process.env.NEXT_PUBLIC_LOGGER_API_URL);

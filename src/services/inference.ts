@@ -15,6 +15,7 @@ class Inference implements Structure {
     this.key = cfg.key;
   }
 
+  // first pass (building pre)
   async parse(raw: string, parsed: string): Promise<Pre | Response> {
     try {
       const response = await axios.post(
@@ -46,18 +47,14 @@ class Inference implements Structure {
     }
   }
 
+  // last pass (building post)
   async infer(pre: Pre): Promise<Post | Object | Response> {
     try {
       const response = await axios.post(
         "https://api.anthropic.com/v1/messages",
         {
           model: "claude-sonnet-4-5",
-          messages: [
-            {
-              role: "assistant",
-              content: this.prompt(pre),
-            },
-          ],
+          messages: this.prompt(pre),
           max_tokens: 10996,
         },
         {
@@ -70,27 +67,25 @@ class Inference implements Structure {
       );
 
       const result = this.terraform(this.extract(response));
-      if (!this.validate("post", result)) {
-        logger.error(
-          "* We were unable to parse the stack trace. All calls were successful, so retrying..",
-        );
-      }
 
       return result;
     } catch (e) {
-      if (isAxiosError(e)) logger.error("* Is an AxiosError, check API key.");
+      if (isAxiosError(e)) {
+        logger.info(e?.response?.status);
+        logger.info(e.response?.data)
+        logger.error("* Is an AxiosError, check API key.");
+      }
       logger.fatal(`* Ran into a major error. Not your fault.`);
       return { success: false, error: "* Unknown error occurred." };
     }
   }
 
   // builds prompt for infer
-  private prompt(pre: Pre): { role: string; content: string } {
-    return {
-      role: "system",
-      content: `You are an expert debugging assistant. Analyze the error context and provide a structured debugging report.
-    Context provided:
-    ${JSON.stringify(pre, null, 2)}
+  private prompt(pre: Pre): { role: string; content: string }[] {
+    return [
+      {
+        role: "assistant",
+        content: `You are an expert debugging assistant. Analyze the error context and provide a structured debugging report.
 
     Your task:
     1. Generate a one-line summary (simple, human-readable). It's meant to be displayed like:
@@ -151,7 +146,12 @@ class Inference implements Structure {
     delete_file
     A tool to delete files. Use this to remove unnecessary or obsolete files from your project, helping keep your workspace organized.
     `,
-    };
+      },
+      {
+        role: "user",
+        content: `Context provided: ${JSON.stringify(pre)}`,
+      },
+    ];
   }
 
   // builds prompt for parse

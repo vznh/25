@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { logger } from "../../../src/templates/client/logger";
 
 export default function AsyncErrors() {
   const [loading, setLoading] = useState(false)
@@ -7,21 +8,25 @@ export default function AsyncErrors() {
   const unhandledPromiseRejection = async () => {
     const deepNested3 = () => {
       const value = Math.random()
-      throw new Error('Unhandled promise rejection from deep nested function!')
+      // throw new Error('Unhandled promise rejection from deep nested function!')
     }
-    
+
     const deepNested2 = () => {
       const temp = [1, 2, 3]
-      return deepNested3()
+      // return deepNested3()
     }
-    
+
     const deepNested1 = async () => {
       await new Promise(resolve => setTimeout(resolve, 10))
-      return deepNested2()
+      // return deepNested2()
     }
-    
+
     // Trigger unhandled rejection
-    deepNested1() // No await or catch - will be unhandled
+    try {
+      deepNested1()
+    } catch (e) {
+      logger.capture(e);
+    } // No await or catch - will be unhandled
   }
 
   const asyncErrorWithoutTryCatch = async () => {
@@ -31,24 +36,24 @@ export default function AsyncErrors() {
       }
       return response
     }
-    
+
     const parseData = async (response: Response) => {
       const validated = validateResponse(response)
       return await validated.json()
     }
-    
+
     const fetchFromAPI = async (endpoint: string) => {
       setLoading(true)
       const response = await fetch(endpoint)
       return await parseData(response)
     }
-    
+
     const processRequest = async () => {
       const data = await fetchFromAPI('/api/nonexistent-endpoint')
       setLoading(false)
       return data
     }
-    
+
     // No try-catch - error will bubble up
     await processRequest()
   }
@@ -60,12 +65,12 @@ export default function AsyncErrors() {
       }
       return true
     }
-    
+
     const processIteration = (i: number) => {
       const multiplier = 2
       return checkCondition(i * multiplier)
     }
-    
+
     const runLoop = async () => {
       setLoading(true)
       let i = 0
@@ -74,7 +79,7 @@ export default function AsyncErrors() {
         processIteration(i)
       }
     }
-    
+
     await runLoop()
   }
 
@@ -82,11 +87,11 @@ export default function AsyncErrors() {
     const createLargeString = () => {
       return 'x'.repeat(1000)
     }
-    
+
     const createLargeArray = () => {
       return new Array(100000).fill(createLargeString())
     }
-    
+
     const allocateMemory = async (largeArrays: any[]) => {
       for (let i = 0; i < 1000; i++) {
         const largeArray = createLargeArray()
@@ -94,38 +99,38 @@ export default function AsyncErrors() {
         await new Promise(resolve => setTimeout(resolve, 10))
       }
     }
-    
+
     const startMemoryLeak = async () => {
       const largeArrays: any[] = []
       await allocateMemory(largeArrays)
     }
-    
+
     await startMemoryLeak()
   }
 
   const raceCondition = async () => {
     let counter = 0
-    
+
     const getCurrentValue = () => {
       return counter
     }
-    
+
     const updateCounter = (newValue: number) => {
       counter = newValue
     }
-    
+
     const incrementAsync = async () => {
       const current = getCurrentValue()
       await new Promise(resolve => setTimeout(resolve, Math.random() * 100))
       updateCounter(current + 1)
     }
-    
+
     const runRaceCondition = async () => {
       await Promise.all([incrementAsync(), incrementAsync(), incrementAsync()])
       console.error(`Race condition - Final counter: ${counter} (should be 3)`)
       alert(`Final counter: ${counter} (should be 3)`)
     }
-    
+
     await runRaceCondition()
   }
 
@@ -144,33 +149,33 @@ export default function AsyncErrors() {
         </div>
       )}
       {loading && <p className="text-blue-500">Loading...</p>}
-      
+
       <div className="grid grid-cols-2 gap-2 mt-2">
-        <button 
+        <button
           onClick={unhandledPromiseRejection}
           className="bg-blue-500 text-white px-4 py-2 rounded"
         >
           Unhandled Promise
         </button>
-        <button 
+        <button
           onClick={asyncErrorWithoutTryCatch}
           className="bg-blue-600 text-white px-4 py-2 rounded"
         >
           Async Error No Catch
         </button>
-        <button 
+        <button
           onClick={infiniteAsyncLoop}
           className="bg-blue-700 text-white px-4 py-2 rounded"
         >
           Infinite Async Loop
         </button>
-        <button 
+        <button
           onClick={memoryLeakAsync}
           className="bg-blue-800 text-white px-4 py-2 rounded"
         >
           Memory Leak Async
         </button>
-        <button 
+        <button
           onClick={raceCondition}
           className="bg-indigo-500 text-white px-4 py-2 rounded"
         >
