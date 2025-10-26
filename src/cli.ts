@@ -12,9 +12,8 @@ program
   .version("0.0.1");
 
 program
-  .command('add')
+  .command('add <type>')
   .description("Add an instance of Axiom to your project.")
-  .argument("<type>", "Type of integration (client | server)")
   .action(async (t: string) => {
     switch (t) {
       case 'client':
